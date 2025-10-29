@@ -100,7 +100,7 @@ def color_text(text, color = "end"):
         "magenta": "\033[35m",
         "cyan": "\033[36m",
         "white": "\033[37m",
-        "italic": "\033[3m]",
+        "italic": "\033[3m",
         "end": "\033[0m"
         }
     return f"{colors.get(color, '')}{text}{colors['end']}"
@@ -126,7 +126,7 @@ def move_to_room(current_room, target_room, inventory):
     slowprint(room_data["description"], 0.02)
     return target_room
 
-#========= Game Scenes ==========
+#========= Game Dialogue Scenes ==========
 
 def opening():
     global player_name
@@ -158,7 +158,9 @@ def opening():
     slowprint(color_text(f"{player_name}...", "magenta"), 0.04)
     pause()
     slowprint(color_text("Interesting name, so where do we start?", "blue"), 0.04)
+    pause()
     slowprint(color_text("10 years ago...","magenta"),0.04)
+    pause(1.5)
     #Then Game
     sep()
 
@@ -177,8 +179,8 @@ def scene1():
     slowprint(color_text("Be careful everyone","blue"),0.04)
     pause()
     slowprint(color_text(f"Don't worry {player_name}, how scary can a place like this actually be?","red"),0.04)
+    
     sep()
-
     slowprint(color_text("they all enter the arcade", "italic"), 0.1)
     pause(1)
     slowprint("21:12:47", 0.1)
@@ -202,7 +204,7 @@ def scene1():
     slowprint(color_text("The screen is glitched out though, shame", "yellow"), 0.04)
     
     sep()
-    slowprint("the screen prints", 0.1)
+    slowprint(color_text("the screen prints", "italic"), 0.1)
     sep()
     
     slowprint_glitch("HELLO THERE FRIENDS","cyan",0.04,.2)
@@ -210,14 +212,14 @@ def scene1():
     sep()
     slowprint(color_text("Uhhhh, sure?","blue"),0.04)
     sep()
-    slowprint("you press yes and the game starts", 0.1)
+    slowprint(color_text("you press yes and the game starts", "italic"), 0.1)
     sep()
     slowprint(color_text("Woah, this is pretty cool. Reminds me of Super Mario", "blue"), 0.04)
     pause()
     slowprint(color_text("Hey!! I want a turn next!", "red"), 0.04)
 
     sep()
-    slowprint("an hour passes", 0.1)
+    slowprint(color_text("an hour passes", "italic"), 0.1)
     slowprint("22:14:55", 0.1)
     sep()
 
@@ -225,24 +227,222 @@ def scene1():
     slowprint(color_text("Well, that was fun, but it's time for us to move on", "yellow"), 0.04)
     slowprint(color_text("Maybe we can find the security room and look over the camera footage", "red"), 0.04)
     slowprint(color_text("For once Brad, a smart idea", "yellow"), 0.04)
+    
     sep()
-    slowprint("the arcade machine begins to shake violently", 0.1)
+    slowprint(color_text("the arcade machine begins to shake violently", "italic"), 0.1)
     sep()
+
     slowprint(color_text("What the heck is happening to the machine..??", "green"), 0.04)
     slowprint_glitch("WHO EVER SAID YOU COULD LEAVE? WE'RE PLAYING AGAIN", "cyan", 0.04, 0.2)
     slowprint(color_text("What is wrong with the machine??", "blue"), 0.04)
-    slowprint(color_text("WE NEED TO GET OUT OF HERE, RUN", "red"), 0.04)
+    slowprint(color_text("QUICK, WE NEED TO GET OUT OF HERE, RUN!!!", "red"), 0.04)
+    
     sep()
-    slowprint("the arcade machine and the floor of the lobby rumble and hum with horrifying intent", 0.04)
-    slowprint("Tobias, pulls himself out of the arcade window and into the real world", 0.04)
+    slowprint(color_text("the arcade machine and the floor of the lobby rumble and hum with horrifying intent","italic"), 0.04)
+    slowprint(color_text("Tobias, pulls himself out of the arcade window and into the real world", "italic"), 0.04)
     sep()
     slowprint_glitch("COME FRIENDS, ITS TIME TO PLAY UNTIL OUR HEARTS STOP", "cyan", 0.04, 0.2)
     sep()
-    slowprint("You run into an abandoned area of the arcade, not knowing where you are or came from. Your friends' screams go silent as you start to look around", 0.04)
+    slowprint(color_text("You run into an abandoned area of the arcade, not knowing where you are or came from. Your friends' screams go silent as you start to look around", "italic"), 0.04)
+    slowprint(color_text("You make your way out of the storage closet you're in but realize one thing...", "italic"), 0.04)
+    slowprint(color_text("You need to find a way out of here...now", "italic"), 0.04)
     sep()
 
+#========= Main Gameplay Loop =========
+def lobby_gameplay():
+    sep()
+    slowprint(color_text("You find yourself in the lobby of the arcade. Your only company being the flickering lights and broken machines around you.", "italic"), 0.1)
+    pause()
+    slowprint(color_text("You need to find your friends and escape..", "italic"), 0.1)
+    pause()
+    slowprint(color_text("Look around, examine, and do whatever you can to escape", "italic"), 0.1)
+    pause()
 
-#World State
+    current_room = player["location"]
+
+    while True:
+        sep()
+        command = input(color_text("> What would you like to do? (move/examine/inventory/help/look): ", "yellow")).strip().lower()
+
+        if command in ["scan", "look"]:
+            describe_room(current_room)
+        
+        elif command.startswith("examine "):
+            obj_name = command.replace("examine ", "")
+            examine_object(current_room, obj_name)
+        
+        elif command.startswith("move "):
+            target = command.replace("move ", "")
+            current_room = move_to_room(current_room, target, player["inventory"])
+        
+        elif command == "inventory":
+            slowprint("I have..: " + ", ".join(player["inventory"]) if player["inventory"] else "Your inventory is empty.", 0.02)
+
+        elif command == "help":
+            slowprint("I can... move [location], examine [object], inventory, look/scan, help", 0.02)
+
+        elif command == "quit":
+            slowprint("You decide to give up and give into the darkness around you..", 0.02)
+            slowprint(color_text("BAD ENDING","red"), 0.1)
+            break
+        
+        else:
+            slowprint("Im not sure thats something I can do..", 0.02)
+
+#========= Room and Object Logic =========
+def describe_room(room):
+    data = locations[room]
+    slowprint(f"You are in the {room}.", 0.02)
+    slowprint(data["description"], 0.02)
+    pause()
+    if "objects" in data:
+        slowprint("You notice..", 0.04)
+        for obj in data["objects"]:
+            slowprint(f"- {obj}: {data['objects'][obj]['description']}", 0.02)
+
+def examine_object(room, obj_name):
+    room_data = locations[room]
+    if "objects" not in room_data or obj_name not in room_data["objects"]:
+        slowprint("Theres nothing like that here.", 0.02)
+        return
+    
+    obj = room_data["objects"][obj_name]
+    slowprint(color_text(f"{obj_name.upper()}:", "bold"))
+    slowprint(obj["description"])
+    if obj["interactable"] and obj["puzzle"]:
+        slowprint(color_text("It seems interactive...", "italic"))
+        play = input("Inspect further? (y/n): ").lower()
+        if play == "y":
+            run_puzzle(obj["puzzle"])
+    
+#========= Puzzle Dispatcher =========
+def run_puzzle(puzzle_name):
+    puzzles = {
+        "generator": puzzle_generator,
+        "syntax": puzzle_syntax,
+        "signal_interrupt": puzzle_interrupt,
+        "file_restore": puzzle_file_restore,
+        "eof_input": puzzle_eof,
+        "corrupted_boot": puzzle_bootloader
+    }
+
+    if puzzle_name in puzzles:
+        puzzles[puzzle_name]()
+    else:
+        slowprint("Im over thinking this..", 0.02)
+
+#Individual Puzzle Definitions
+def puzzle_generator():
+    sep()
+    slowprint_glitch(">>> POWER GENERATOR TERMINAL <<<", "cyan", 0.02, 0.08)
+    pause()
+    slowprint("SYSTEM STATUS: OFFLINE", 0.03)
+    slowprint("You see 3 voltage dials. Each needs to sum to 100 volts exactly.")
+    pause()
+
+    voltages = []
+    for i in range(3):
+        try:
+            v = int(input(f"Set voltage dial {i+1}: "))
+            voltages.append(v)
+        except ValueError:
+            print("That's not a valid number, what am I doing..?")
+            return puzzle_generator()
+    total = sum(voltages)
+
+    if total == 100:
+        flicker_text(color_text("POWER RESTORED", "green"), 6, 0.15)
+        slowprint("Lights hum back to life across the arcade...")
+        locations["control_room"]["is_locked"] = False
+    else:
+        slowprint(color_text("VOLTAGE INSTABILITY DETECTED: SYSTEM SHUTTING DOWN...", "red"))
+        fake_glitch_sequence()
+
+
+def puzzle_syntax():
+    sep()
+    slowprint("You find an old CRT monitor showing broken Python code:")
+    print(color_text('for i in range(5)\n    print("Hello Arcade")', "yellow"))
+    pause()
+    guess = input("You feel an urge to fix the code and type it correctly: ").strip()
+
+    if guess == 'for i in range(5): print("Hello Arcade")' or guess == 'for i in range(5):\n    print("Hello Arcade")':
+        slowprint(color_text("CODE COMPILED SUCCESSFULLY.", "green"))
+        slowprint("You hear a nearby door unlocks with a loud click...")
+        locations["backroom"]["is_locked"] = False
+    else:
+        slowprint(color_text("SYNTAX ERROR: TRY AGAIN LATER...", "red"))
+
+
+def puzzle_interrupt():
+    sep()
+    slowprint("The terminal hums: a strange program runs endlessly...")
+    slowprint("You see this on screen:")
+    print(color_text("while True:\n    print('RUNNING...')", "yellow"))
+    pause()
+    slowprint(color_text("You feel the urge to 'INTERRUPT' it somehow...", "italic"))
+
+    try:
+        while True:
+            print("RUNNING...", end="\r")
+            time.sleep(0.3)
+    except KeyboardInterrupt:
+        slowprint(color_text("\nPROGRAM INTERRUPTED. ACCESS GRANTED.", "green"))
+        slowprint("A door unlocks as the fans die down.")
+        locations["arcade_room_floor"]["is_locked"] = False
+
+
+def puzzle_file_restore():
+    sep()
+    slowprint("You find a broken log file named system_log.txt")
+    with open("system_log.txt", "w") as f:
+        f.write("ERROR###POWER###CORRUPTED###\n")
+
+    slowprint("A message reads: 'Restore log integrity to continue.'")
+    guess = input("Enter the restored text line: ")
+
+    if guess.lower().strip() == "power restored successfully":
+        with open("system_log.txt", "w") as f:
+            f.write("POWER RESTORED SUCCESSFULLY\n")
+        slowprint(color_text("LOG REPAIRED. ACCESS UNLOCKED.", "green"))
+    else:
+        slowprint(color_text("The screen prints 'RESTORATION FAILED' as the system hums ominously...", "red"))
+
+
+def puzzle_eof():
+    sep()
+    slowprint("You see a message: 'Awaiting user input to terminate connection...'")
+    slowprint(color_text("Hint: Sometimes silence says more than words...", "italic"))
+    try:
+        while True:
+            line = input(">> ")
+            if line.lower() == "exit":
+                slowprint("Manual exit not accepted.")
+    except EOFError:
+        slowprint(color_text("\nCONNECTION TERMINATED.", "green"))
+        slowprint("The terminal powers off.")
+    except KeyboardInterrupt:
+        slowprint(color_text("\WRONG INPUT TYPE.", "RED"))
+
+
+def puzzle_bootloader():
+    sep()
+    slowprint_glitch(">>> BOOT SECTOR CORRUPTED <<<", "red", 0.03, 0.1)
+    pause()
+    slowprint("Repair sequence initiated...")
+    time.sleep(1)
+    slowprint("TYPE 'REPAIR' WHEN PROMPTED TO STABILIZE SECTORS.")
+    for i in range(5):
+        sys.stdout.write(glitch_text(f"Sector {i+1}: STABILIZING...\n", 0.2))
+        time.sleep(random.uniform(0.5, 1.2))
+        inp = input("TYPE NOW: ").strip().upper()
+        if inp != "REPAIR":
+            slowprint(color_text("SECTOR DESTABALIZED, BOOT REQUIRES RESTART...", "red"))
+            return
+    slowprint(color_text("ALL SECTORS STABILIZED. SYSTEM BOOTED SUCCESSFULLY.", "green"))
+
+
+#World Locations
 locations = {
     "lobby": {
         "description": "A dust filled lobby filled with broken ticket machines, tattered posters of arcade heroes, and a battered prize counter.",
@@ -255,7 +455,6 @@ locations = {
     "backroom": {
         "description": "A room filled with tangled bunches of wires, old cleaning supplies, and an unhealthy amount of cobwebs",
         "connected":["lobby", "control_room"],
-        "puzzle": "generator",
         "items": [],
         "is_locked": True,
         "required_item": "key"
@@ -265,7 +464,6 @@ locations = {
         "description": "Rows upon rows of abandoned and ignored CRT machines with one displaying broken code..",
         "connected": ["backroom"],
         "items": [],
-        "puzzle": "syntax",
         "is_locked": True,
         "required_item": "keycard"
         },
@@ -277,6 +475,7 @@ locations = {
         "is_locked": False,
         "required_item": None
         },
+
     "big_b_arena": {
         "description": "An arena with walls built by abandoned arcade machines and broken tables",
         "connected": ["arcade_room_floor", "maze"],
@@ -284,8 +483,63 @@ locations = {
         "is_locked": True,
         "required_item": "arcade_token"
         },
-    }
 
+    "maze": {
+        "description": "You stand at the entrance of a massive, old kids play maze. Just looking at it makes you feel light-headed.",
+        "connected": ["big_b_arena"],
+        "items": [],
+        "is_locked": True,
+        "required_item": "maze_key"
+        },
+
+    "cafeteria": {
+        "description": "An old cafeteria with broken tables and chairs scattered around.",
+        "connected": ["arcade_room_floor"],
+        "items": [],
+        "is_locked": False,
+        "required_item": None
+        },
+}
+
+locations["lobby"]["objects"] = {
+    "ticket_machine": {
+        "description": "An old ticket machine, it seems to be broken but maybe you can fix it.",
+        "interactable": True,
+        "puzzle": None
+        },
+        
+    "prize_counter": {
+        "description": "A dusty prize counter with a few tattered prizes left on the shelves.",
+        "interactable": True,
+        "puzzle": None
+        },
+
+    "terminal": {
+        "description": "An old green terminal, it seems to be flickering some text..",
+        "interactable": True,
+        "puzzle": None
+        },
+
+    "monitor": {
+        "description": "A flickering CRT monitor displays some broken code.",
+        "interactable": True,
+        "puzzle": "syntax"
+        },
+
+    "cleaning_cart": {
+        "description": "An old cleaning cart with some supplies on it.",
+        "interactable": True,
+        "puzzle": None
+        },
+
+    "pc": {
+        "description": "An old PC tower blinks with a red light..something seems off about it.",
+        "interactable": True,
+        "puzzle": "generator"
+        },
+}
+
+#Define Bosses
 bosses={
     "Pack-Dude": {"area": "maze", "alive": True, "type": "maze_ghost"},
     "Angry-Monkey": {"area": "arena", "alive": True, "type": "barrel_mech"},
@@ -312,6 +566,4 @@ player_name = None
 #Actual Game
 opening()
 scene1()
-
-
-#Wait for me to finish with dialogue, then we can start the main gameplay loop
+lobby_gameplay()
