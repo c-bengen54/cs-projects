@@ -1,7 +1,7 @@
 '''
 Author: Christopher Bengen, Logan Down, Aaron Pichardo
 
-Date: 10/20/25
+Date: 11/05/25
 
 Program Name: Big B's Arcade Mystery
 
@@ -77,7 +77,7 @@ locations = {
 
     "arcade room floor":{
         "description": "\nArcade machines and abandoned table games line the dust and cable covered floor",
-        "connected": ["lobby", "big_b_arena", "cafeteria"],
+        "connected": ["lobby", "big b arena", "cafeteria"],
         "items": [],
         "is_locked": True,
         "required_item": None,
@@ -95,7 +95,7 @@ locations = {
 
     "maze": {
         "description": "\nYou stand at the entrance of a massive, old kids play maze. Just looking at it makes you feel light-headed.",
-        "connected": ["big_b_arena"],
+        "connected": ["big b arena"],
         "items": [],
         "is_locked": True,
         "required_item": "maze_key",
@@ -112,7 +112,7 @@ locations = {
         },
     
     "throne room": {
-        "description": "\nA dark room with a large throne made of arcade machines and broken tables, and the pizelated souls of those who once were",
+        "description": "\nA dark room with a large throne made of arcade machines and broken tables, and the pixelated souls of those who once were",
         "connected": ["maze"],
         "is_locked": True,
         "required_item": "throne_key",
@@ -146,18 +146,18 @@ locations["control room"]["objects"] = {
         "description": "\nAn old green terminal, it seems to be flickering some text..",
         "interactable": True,
         "puzzle": "file_restore",
-        "puzzle solved": False
+        "puzzle_solved": False
         },
 
     "monitor": {
         "description": "\nA flickering CRT monitor displays some broken code.",
         "interactable": True,
         "puzzle": "syntax",
-        "puzzle solved": False
+        "puzzle_solved": False
         },
 
     "dispenser": {
-        "description": "\nAn old soda dispenser, it seems to be out of order. Theres another sticky note that says, 'Remeber to fix token dispensing terminal, ''power restored successfully'' - Robert'",
+        "description": "\nAn old soda dispenser, it seems to be out of order. There's another sticky note that says, 'Remember to fix token dispensing terminal, ''power restored successfully'' - Robert'",
         "interactable": True,
         "puzzle": None,
         "items": ["purified_water"]
@@ -169,7 +169,7 @@ locations["backroom"]["objects"] = {
         "description": "\nAn old, dingy generator sits in the corner of the storage closet.",
         "interactable": True,
         "puzzle": "generator",
-        "puzzle solved": False
+        "puzzle_solved": False
         },
 }
 
@@ -184,7 +184,7 @@ locations["cafeteria"]["objects"] = {
         "description": "\nAn old soda dispenser, it seems to be out of order. Theres a sticky note that says, 'Remember to fix water dispenser, terminal is left behind one of the arcade machines by the arcade floor - Robert'",
         "interactable": True,
         "puzzle": "bootloader",
-        "puzzle solved": False,
+        "puzzle_solved": False,
         "items": ["purified_water"]
         },
 }
@@ -200,7 +200,7 @@ locations["arcade room floor"]["objects"] = {
         "description": "\nAn old soda dispenser, it seems to be out of order. Right under it is an old PC terminal flashing a message. 'EOF - Terminate Connection by sending EOF signal'",
         "interactable": True,
         "puzzle": "eof_input",
-        "puzzle solved": False,
+        "puzzle_solved": False,
         "items": ["purified_water"]
         },
     
@@ -208,7 +208,7 @@ locations["arcade room floor"]["objects"] = {
         "description": "\nThe entrance to a massive kids play maze. It looks dark and foreboding.",
         "interactable": True,
         "puzzle": "signal_interrupt",
-        "puzzle solved": False
+        "puzzle_solved": False
         }
 }
 
@@ -232,7 +232,7 @@ player = {
     "joined_tobias": False,
     "visited_rooms": set(),
     "health": 50,
-    "attack": 10
+    "attack": 40
     }
 
 #Global Flag Initializations
@@ -243,8 +243,12 @@ first_boss_triggered = False
 second_boss_triggered = False
 third_boss_triggered = False
 
+opening_sequence_completed = False
+scene1_completed = False
+gameplay_started = False
+scene2_completed = False
 
-# ===== Define Helper Functions =====
+# ========= Define Helper Functions =========
 
 #Utility: Simulate a Dice Roll
 def dice_roll():
@@ -286,6 +290,7 @@ def slowprint_glitch(text, color = "end", delay = 0.02, intensity = 0.02):
 
 #Utility: Glitched Text Printer
 def glitch_text(text, intensity = 0.02): #REMEMBER TO SURROUND BY A PRINT STATEMENT
+    """Print text with some characters replaced by symbols to emulate corruption"""
     glitched = ""
     for ch in text:
         if random.random() < intensity and ch.isalpha():
@@ -296,6 +301,7 @@ def glitch_text(text, intensity = 0.02): #REMEMBER TO SURROUND BY A PRINT STATEM
 
 #Utility: Flickering Text
 def flicker_text(text, times = 5, delay = 0.2):
+    """Print text and clear the screen to emulate flickering text"""
     for i in range(times):
         print("\033c", end = "", flush = True)
         time.sleep(delay/2)
@@ -305,15 +311,17 @@ def flicker_text(text, times = 5, delay = 0.2):
 
 #Utility: Fake Glitch Sequence
 def fake_glitch_sequence():
+    """Simulate a fake glitch sequence for immersion"""
     slowprint(color_text(">>> SYSTEM REBOOTING <<<", "red"), 0.04)
     pause()
     for i in range(4):
         print(glitch_text("LOADING MEMORY MODULE...", 0.4))
         time.sleep(0.4)
-    flicker_text(color_text(">>> SYSTEM REBOOTED <<<", "green"), 5, 0.15)
+    flicker_text(color_text(">>> SYSTEM REBOOTED <<<", "green"), 5, 0.25)
 
 #Utility: ANSI Color Helper
 def color_text(text, color = "end"):
+    """Return a colorized string of text"""
     colors = {
         "bold": "\033[1m",
         "red": "\033[31m",
@@ -336,13 +344,29 @@ def normalize_obj_name(name: str) -> str:
 
 #Utility: Check if Player has Item
 def has_item(item):
+    """Check if the player has an item in their inventory"""
     global player
     return item in player["inventory"]
 
 #Utility: Unlock a Room
 def unlock_room(room_name):
+    """Check if the player has unlocked a room by matching room key names to their respective dictionaries"""
     global locations
-    locations[room_name]["is_locked"] = False
+    #Normalize spaces and undescorse
+    if room_name in locations:
+        locations[room_name]["is_locked"] = False
+        return
+    alt = room_name.replace("_", " ")
+    if alt in locations:
+        locations[alt]["is_locked"] = False
+        return
+    alt2 = room_name.replace(" ", "_")
+    if alt2 in locations:
+        locations[alt2]["is_locked"] = False
+        return
+    #Fallback: no-op if name not found (prevents KeyError)
+    slowprint(color_text(f"DEBUG: unlock_room could not find '{room_name}'", "red"), 0.01)
+
 
 #Utility: Track Command Usage
 def track_command(room, command, tracker):
@@ -359,41 +383,42 @@ def track_command(room, command, tracker):
     # Personalized responses
     if count == 3:
         if command == "look":
-            slowprint(color_text("am I blind..I feel like I've seen enough of this room..", "italic"), 0.02)
+            return slowprint(color_text("am I blind..I feel like I've seen enough of this room..", "italic"), 0.02)
 
         elif command == "inventory":
-            slowprint(color_text("still carrying the same stuff... maybe I should find something new.", "italic"), 0.02)
+            return slowprint(color_text("still carrying the same stuff... maybe I should find something new.", "italic"), 0.02)
 
         elif command == "map":
-            slowprint(color_text("i keep checking the map... but it hasn't changed.", "italic"), 0.02)
+            return slowprint(color_text("i keep checking the map... but it hasn't changed.", "italic"), 0.02)
 
         elif command == "help":
-            slowprint(color_text("i think I remember what I can do... maybe I should just try something.", "italic"), 0.02)
+            return slowprint(color_text("i think I remember what I can do... maybe I should just try something.", "italic"), 0.02)
 
         elif command == "interact":
-            slowprint(color_text("i keep poking the same things... maybe I’m missing something.", "italic"), 0.02)
+            return slowprint(color_text("i keep poking the same things... maybe I’m missing something.", "italic"), 0.02)
 
     elif count == 5:
         if command == "look":
-            slowprint(color_text("i keep looking... but nothing changes. Maybe I should move on.", "italic"), 0.02)
+            return slowprint(color_text("i keep looking... but nothing changes. Maybe I should move on.", "italic"), 0.02)
 
         elif command == "inventory":
-            slowprint(color_text("my inventory hasn't magically changed. Time to explore.", "italic"), 0.02)
+            return slowprint(color_text("my inventory hasn't magically changed. Time to explore.", "italic"), 0.02)
             
         elif command == "map":
-            slowprint(color_text("still the same layout...maybe the answers aren't on the map.", "italic"), 0.02)
+            return slowprint(color_text("still the same layout...maybe the answers aren't on the map.", "italic"), 0.02)
             
         elif command == "help":
-            slowprint(color_text("if I need help this often... maybe Tobias is winning.", "italic"), 0.02)
+            return slowprint(color_text("if I need help this often... maybe Tobias is winning.", "italic"), 0.02)
             
         elif command == "interact":
-            slowprint(color_text("nothing changes... but maybe I need to think differently.", "italic"), 0.02)
+            return slowprint(color_text("nothing changes... but maybe I need to think differently.", "italic"), 0.02)
             
     elif count >= 8:
-        slowprint_glitch("ARE YOU JUST GOING TO SIT THERE ALL DAY??", "cyan", 0.04, 0.05)
         tracker[room][command] = 0
+        return slowprint_glitch("ARE YOU JUST GOING TO SIT THERE ALL DAY??", "cyan", 0.04, 0.05)
+        
 
-#======== Movement and Lock Logic ==========
+#========= Movement and Lock Logic =========
 def move_to_room(current_room, target_room, inventory):
     global player, locations, power_on
 
@@ -435,9 +460,9 @@ def move_to_room(current_room, target_room, inventory):
     else:
         slowprint(f"\nYou enter the {current_room}.", 0.02)
     slowprint(room_data["description"], 0.02)
-    return target_room
+    #return target_room
 
-#======== Define boss encounter logic ========
+#========= Define boss encounter and fight logic =========
 #Check for boss encounter
 def check_for_boss(current_room):
     for boss_name, boss_data in bosses.items():
@@ -447,7 +472,7 @@ def check_for_boss(current_room):
 
 #Boss Encounter Logic
 def run_boss_encounter(name, data):
-    global first_boss_triggered, second_boss_triggered, third_boss_triggered
+    global first_boss_triggered, second_boss_triggered, third_boss_triggered, player_name
     pause()
     # First boss special dialogue
     if not first_boss_triggered and name == "Road-Boxer":
@@ -463,7 +488,7 @@ def run_boss_encounter(name, data):
         slowprint_glitch("HERE, LET ME SHOW YOU HOW MUCH FUN WE CAN HAVE!!", "cyan", 0.04, 0.03)
         slowprint(color_text("you hear a familiar voice beneath the distortion...", "italic"), 0.04)
         pause()
-        slowprint(color_text(f"{name}: {player_name}...? Is that you?", "yellow"), 0.04)
+        slowprint(color_text(f"{player['name']}...? Is that you?", "yellow"), 0.04)
         pause()
         slowprint(color_text("CHAD?? WHAT HAPPENED TO YOU...", "blue"), 0.04)
         pause()
@@ -493,7 +518,7 @@ def run_boss_encounter(name, data):
         sep()
         slowprint(color_text("Brad leaps down from the platform, now fully transformed into Angry-Monkey.", "italic"), 0.04)
         sep()
-        slowprint_glitch("Because now I get to show you just how strong I realy am.", "red", 0.04, 0.03)
+        slowprint_glitch("Because now I get to show you just how strong I really am.", "red", 0.04, 0.03)
         sep()
         slowprint(color_text("you brace yourself for the fight ahead...", "italic"), 0.04)
         slowprint(color_text("As Brad becomes...", "italic"), 0.04)
@@ -513,14 +538,15 @@ def run_boss_encounter(name, data):
         slowprint_glitch("Tobias he... he promised me that if I came with him, I'd be safe...", "green", 0.04, 0.03)
         slowprint_glitch("But now... I don't know...", "green", 0.04, 0.02)
         slowprint_glitch("I just want this to end...he never told me it would hurt this badly...", "green", 0.04, 0.02)
-        slowprint_glitch("Please... dont let me go...", "green", 0.04, 0.03)
+        slowprint_glitch("Please... don't let me go...", "green", 0.04, 0.03)
         sep()
         slowprint(color_text("As he says that... Arthur slowly transforms into...", "italic"), 0.04)
         slowprint(color_text(f"{name}", "red"), 0.1)
         sep()
 
     # Begin combat
-    boss_health = data["health"]
+    original_boss_health = data["health"]
+    boss_health = original_boss_health
     player_health = player["health"]
 
     while boss_health > 0 and player_health > 0:
@@ -530,12 +556,12 @@ def run_boss_encounter(name, data):
 
         if action == "attack":
             roll = dice_roll()
-            damage = max(1, player["attack"] +random.randint(0, roll))
+            damage = max(1, player["attack"] + random.randint(0, roll))
             slowprint(f"\nYou strike for {damage} damage!")
             boss_health -= damage
 
         elif action == "use item":
-            #Set up purification for saviour route
+            #Set up purification for true route
             if "purified_water" in player["inventory"] and boss_health <= 20:
                 confirm = input("\nYou have purified water. Would you like to use it to purify the soul? (yes/no): ").strip().lower()
                 if confirm == "yes":
@@ -543,7 +569,13 @@ def run_boss_encounter(name, data):
                     result = dice_roll()
                     if result >= 10:
                         slowprint(color_text(f"\n{name} has been purified. Their soul is set free.", "bold"))
-                        bosses[name]["alive"] = False
+                        #Mark boss dead and adjust player counts
+                        data_name = name
+                        #Find matching key in bosses dict and update alive flag
+                        for bname in bosses:
+                            if bname == name or bname.startswith(name.split()[0]):
+                                bosses[bname]["alive"] = False
+                                break
                         player["bosses_spared"] += 1
                         if name == "Road-Boxer":
                             slowprint(color_text("\nYou hear Chad's spirit thank you in a whisper...", "bold"))
@@ -554,21 +586,26 @@ def run_boss_encounter(name, data):
 
                         slowprint(color_text("\nYou run out of purified water", "yellow"))
                         player["inventory"].remove("purified_water")
-                        return
+                        # set boss_health to 0 to exit
+                        boss_health = 0
+                        break
                     else:
-                        #If player fails purification, boss health increases which forces a retry
+                        #If player fails purification, boss health increases but cap it to avoid runaway
                         slowprint(color_text(f"\nThe purification fails! {name} remains hostile.", "red"))
-                        boss_health += int(boss_health * 0.5)
+                        boss_health = min(int(boss_health * 1.5), original_boss_health * 2)
+                        #Continue to next iteration (boss will attack)
                 else:
                     slowprint(color_text("\nYou decide not to use the purified water.", "yellow"))
             else:
                 slowprint("\nThe boss is not weak enough to purify.", 0.02)
-            
+                
 
         elif action == "dodge":
             roll = dice_roll()
             if roll >= 12:
                 slowprint("\nYou dodge the attack!")
+                player_health = player_health  # no change
+                #Skip boss attack this round
                 continue
             else:
                 slowprint("\nYou fail to dodge...")
@@ -577,21 +614,48 @@ def run_boss_encounter(name, data):
             slowprint("\nYou flee the battle. The boss remains undefeated.")
             return
 
-        # Boss attacks
-        roll = dice_roll()
-        damage = max(1, data["attack"] + random.randint(0, roll))
-        slowprint(f"\n{name} hits you for {damage} damage!")
-        player_health -= damage
-        slowprint(color_text(f"\nYour HP: {player_health} | {name}'s HP: {boss_health}", "yellow"))
+        # Boss attacks (only if still alive)
+        if boss_health > 0:
+            roll = dice_roll()
+            damage = max(1, data["attack"] + random.randint(0, roll))
+            slowprint(f"\n{name} hits you for {damage} damage!")
+            player_health -= damage
+            slowprint(color_text(f"\nYour HP: {player_health} | {name}'s HP: {boss_health}", "yellow"))
 
-    if player_health <= 0:
-        slowprint(color_text("\nYou were defeated...", "red"))
-        player["alive"] = False
+        # Check player death
+        if player_health <= 0:
+            slowprint(color_text("\nYou were defeated...", "red"))
+            player["alive"] = False
+            sep()
+            slowprint(color_text("This isn't how the story goes and you know it. Stick to the script.", "red"), 0.04)
+            sep()
 
-    else:
-        slowprint(color_text(f"\nYou defeated {name}!", "green"))
-        bosses[name]["alive"] = False
-        player["bosses_defeated"] += 1
+            choice = input("Retry the boss fight? (yes/no): ").strip().lower()
+            if choice == "yes":
+                #Reset both player and boss health and continue loop
+                player["alive"] = True
+                player["health"] = 50
+                player_health = 50
+                boss_health = original_boss_health
+                fake_glitch_sequence()
+                continue
+            else:
+                slowprint(color_text("Coward.", "red"))
+                return
+        else:
+            # Player still alive and boss dead
+            if boss_health <= 0:
+                slowprint(color_text(f"\nYou defeated {name}!", "green"))
+                # mark the boss as dead in the main bosses dict
+                for bname in bosses:
+                    # match by area/name fuzzily
+                    if bname == name or bname.startswith(name.split()[0]):
+                        bosses[bname]["alive"] = False
+                        break
+                player["bosses_defeated"] += 1
+                # sync player HP back to main player state
+                player["health"] = player_health
+                break
 
 #Final Boss Fight
 def run_final_tobias_encounter():
@@ -627,6 +691,7 @@ def run_final_tobias_encounter():
         sep()
         slowprint(color_text("You all escape the arcade... together.", "green"), 0.04)
         slowprint(color_text("TRUE ENDING UNLOCKED", "bold"), 0.1)
+        scene2()
 
     # GOOD ENDING
     elif spared + defeated == 3 and spared > 0:
@@ -634,7 +699,9 @@ def run_final_tobias_encounter():
         slowprint(color_text(f"{player['name']} faces Tobias in a final battle of will.", "yellow"), 0.04)
         slowprint_glitch("YOU THINK YOU CAN DEFEAT ME ALONE?", "CYAN", 0.04, 0.05)
         slowprint(color_text("Im not alone... I carry the strength of those you tried to take from me.", "blue"), 0.04)
-        run_tobias_battle(final_form=False)
+        result = run_tobias_battle(final_form=False)
+        if result == "victory":
+            scene2()
 
     # SECRET ENDING
     elif "arcade token" in inventory and "purified_water" not in inventory and spared == 0:
@@ -647,10 +714,13 @@ def run_final_tobias_encounter():
             slowprint(color_text("You become part of the arcade... forever.", "red"), 0.04)
             slowprint(color_text("SECRET ENDING UNLOCKED", "bold"), 0.1)
             player["joined_tobias"] = True
+            scene2()
             return
         else:
             slowprint(color_text("You resist. Tobias snarls. The final battle begins.", "red"), 0.04)
-            run_tobias_battle(final_form=True)
+            result = run_tobias_battle(final_form=True)
+            if result == "victory":
+                scene2()
 
     # LAME ENDING
     elif spared + defeated == 0:
@@ -658,6 +728,7 @@ def run_final_tobias_encounter():
         slowprint(color_text("No battles. No answers. Just... leaving.", "italic"), 0.04)
         slowprint(color_text("The arcade hums behind you, still alive with secrets.", "red"), 0.04)
         slowprint(color_text("LAME ENDING UNLOCKED", "bold"), 0.1)
+        scene2()
 
     # BAD ENDING
     else:
@@ -665,7 +736,10 @@ def run_final_tobias_encounter():
         slowprint_glitch("YOU BELONG TO ME NOW.", "cyan", 0.04, 0.05)
         slowprint(color_text(f"{player['name']}'s body collapses. Their soul flickers into the arcade's circuitry.", "red"), 0.04)
         slowprint(color_text("BAD ENDING UNLOCKED", "bold"), 0.1)
-        
+        sep()
+        slowprint(color_text("This isn't how the story goes and you know it. Stick to the script.", "red"), 0.04)
+        sep()
+       
 #Final Boss Battle Logic
 def run_tobias_battle(final_form=False):
     sep()
@@ -695,18 +769,37 @@ def run_tobias_battle(final_form=False):
             slowprint(color_text("You try to run... but the arcade walls close in.", "red"))
             continue
 
-        # Tobias attacks
+        #Tobias attacks
         damage = max(1, boss_attack + random.randint(0, 6))
         slowprint(color_text(f"Tobias hits you for {damage} damage!", "red"))
         player_health -= damage
 
     if player_health <= 0:
-        slowprint(color_text("You fall. Tobias laughs as your soul is consumed.", "red"))
+        slowprint(color_text("You fall as Tobias laughs... you watch hopelessly as your soul is consumed.", "red"))
         slowprint(color_text("BAD ENDING UNLOCKED", "bold"), 0.1)
         player["alive"] = False
+        sep()
+        slowprint(color_text("This isn't how the story goes and you know it. Stick to the script.", "red"), 0.04)
+        sep()
+
+        choice = input("Retry the boss fight? (yes/no): ").strip().lower()
+        if choice == "yes":
+            player["alive"] = True
+            player["health"] = 50
+            fake_glitch_sequence()
+
+            #Call battle again in the same function scope
+            return run_tobias_battle(final_form=final_form)
+                
+        else:
+            slowprint(color_text("Coward.", "red"))
+            return "defeat"
+
     else:
         slowprint(color_text("With a final cry, Tobias shatters into static.", "green"))
         slowprint(color_text("You stumble out of the arcade... alive.", "green"))
+        scene2()
+        return "victory"
         
 #========= Room and Object Logic =========
 #Describe Current Room
@@ -739,7 +832,7 @@ def run_puzzle(puzzle_name):
         "signal_interrupt": puzzle_interrupt,
         "file_restore": puzzle_file_restore,
         "eof_input": puzzle_eof,
-        "corrupted_boot": puzzle_bootloader
+        "bootloader": puzzle_bootloader
     }
 
     if puzzle_name in puzzles:
@@ -772,9 +865,12 @@ def puzzle_generator():
         flicker_text(color_text("POWER RESTORED", "green"), 6, 0.15)
         slowprint("Lights hum back to life across the arcade...")
         unlock_room("control room")
-        unlock_room("arcade room floor")
-        locations["control room"]["requires_power"] = False
-        locations["arcade room floor"]["requires_power"] = False
+        unlock_room("arcade_room_floor")
+        #Ensure requires_power flags set off
+        if "control room" in locations:
+            locations["control room"]["requires_power"] = False
+        if "arcade room floor" in locations:
+            locations["arcade room floor"]["requires_power"] = False
         global power_on
         power_on = True
     
@@ -793,10 +889,13 @@ def puzzle_syntax():
         slowprint("You back away from the monitor.", 0.02)
         return
 
-    if guess == 'for i in range(5): print("Hello Arcade")' or guess == 'for i in range(5):\n    print("Hello Arcade")':
+    if guess == 'for i in range(5): print("Open Arena")' or guess == 'for i in range(5):\n    print("Open Arena")':
         slowprint(color_text("CODE COMPILED SUCCESSFULLY.", "green"))
-        unlock_room("big_b_arena")
-        locations["control room"]["objects"]["monitor"]["puzzle solved"] = True
+        unlock_room("big_b_arena")  
+        # Mark puzzle solved
+        if "control room" in locations and "objects" in locations["control room"]:
+            if "monitor" in locations["control room"]["objects"]:
+                locations["control room"]["objects"]["monitor"]["puzzle_solved"] = True
     else:
         slowprint(color_text("SYNTAX ERROR: TRY AGAIN LATER...", "red"))
 
@@ -812,36 +911,62 @@ def puzzle_interrupt():
         return
 
     try:
+        counter = 0
         while not loop_broken:
             slowprint_glitch("STEALING SOULS...", "red", 0.05, 0.1)
-            time.sleep(0.3)
+            #Allow player to break by hitting enter and typing 'interrupt'
+            try:
+                #Ask for input with short timeout isn't portable; so prompt occasionally
+                if counter % 6 == 0:
+                    resp = input("(type 'interrupt' to stop the program or press Enter to wait): ").strip().lower()
+                    if resp == "interrupt":
+                        raise KeyboardInterrupt
+                time.sleep(0.3)
+            except KeyboardInterrupt:
+                raise
+            counter += 1
+            # auto-fallback after some cycles to avoid infinite loop in constrained environments
+            if counter >= 30:
+                slowprint(color_text("\nSYSTEM AUTO-SHUTDOWN. MAZE ACCESS GRANTED.", "green"))
+                loop_broken = True
+                break
     except KeyboardInterrupt:
         loop_broken = True
+    #When exiting loop set unlocks
+    if loop_broken:
         slowprint(color_text("\nPROGRAM INTERRUPTED. MAZE ACCESS GRANTED.", "green"))
         unlock_room("maze")
-        locations["maze entrance"]["puzzle solved"] = True
-
+        if "arcade room floor" in locations and "objects" in locations["arcade room floor"]:
+            if "maze entrance" in locations["arcade room floor"]["objects"]:
+                locations["arcade room floor"]["objects"]["maze entrance"]["puzzle_solved"] = True
 
 def puzzle_file_restore():
     sep()
     slowprint("You find a broken log file named system_log.txt")
-    with open("system_log.txt", "w") as f:
-        f.write("ERROR###POWER###CORRUPTED###TOKEN###NOT###PRINTED\n")
+    try:
+        with open("system_log.txt", "w") as f:
+            f.write("ERROR###POWER###CORRUPTED###TOKEN###NOT###PRINTED\n")
+    except OSError:
+        slowprint(color_text("File write failed — running in restricted mode.", "red"), 0.02)
 
     slowprint("A message reads: 'Restore log integrity to continue.'")
     guess = input("Enter the restored text line (or type exit to exit): ").strip()
     if guess.lower() == "exit":
         slowprint("You leave the terminal alone.", 0.02)
         return
-
     if guess.lower() == "power restored successfully":
-        with open("system_log.txt", "w") as f:
-            f.write("POWER RESTORED SUCCESSFULLY\n")
+        try:
+            with open("system_log.txt", "w") as f:
+                f.write("POWER RESTORED SUCCESSFULLY\n")
+        except OSError:
+            pass
         slowprint(color_text("LOG REPAIRED. ACCESS UNLOCKED.", "green"))
         slowprint("You see the terminal print out a token...")
         player["inventory"].append("arcade token")
         slowprint(color_text("\nYou obtained: arcade token", "green"))
-        locations["control room"]["objects"]["terminal"]["puzzle solved"] = True
+        if "control room" in locations and "objects" in locations["control room"]:
+            if "terminal" in locations["control room"]["objects"]:
+                locations["control room"]["objects"]["terminal"]["puzzle_solved"] = True
 
     else:
         slowprint(color_text("RESTORATION FAILED...", "red"))
@@ -850,18 +975,24 @@ def puzzle_eof():
     sep()
     slowprint("You see a message: 'Awaiting user input to terminate connection...'")
     slowprint(color_text("Hint: Sometimes silence says more than words...", "italic"))
-    slowprint(color_text("Type 'exit' to leave the puzzle.", "italic"))
+    slowprint(color_text("Type 'exit' or 'EOF' to leave the puzzle.", "italic"))
     try:
         while True:
             line = input(">> ")
             if line.lower() == "exit":
                 slowprint("You leave the terminal alone.", 0.02)
                 return
-            if line.lower() == "exit":
-                slowprint("Manual exit not accepted.")
+            if line.lower() == "eof":
+                slowprint(color_text("\nCONNECTION TERMINATED.", "green"))
+                if "arcade room floor" in locations and "objects" in locations["arcade room floor"]:
+                    if "dispenser" in locations["arcade room floor"]["objects"]:
+                        locations["arcade room floor"]["objects"]["dispenser"]["puzzle_solved"] = True
+                return
     except EOFError:
         slowprint(color_text("\nCONNECTION TERMINATED.", "green"))
-        locations["arcade room floor"]["objects"]["dispenser"]["puzzle solved"] = True
+        if "arcade room floor" in locations and "objects" in locations["arcade room floor"]:
+            if "dispenser" in locations["arcade room floor"]["objects"]:
+                locations["arcade room floor"]["objects"]["dispenser"]["puzzle_solved"] = True
     except KeyboardInterrupt:
         slowprint(color_text("\nWRONG INPUT TYPE.", "RED"))
 
@@ -880,11 +1011,71 @@ def puzzle_bootloader():
             slowprint(color_text("SECTOR DESTABALIZED, BOOT REQUIRES RESTART...", "red"))
             return
     slowprint(color_text("ALL SECTORS STABILIZED. SYSTEM BOOTED SUCCESSFULLY.", "green"))
-    locations["cafeteria"]["objects"]["dispenser"]["puzzle solved"] = True
+    if "cafeteria" in locations and "objects" in locations["cafeteria"]:
+        if "dispenser" in locations["cafeteria"]["objects"]:
+            locations["cafeteria"]["objects"]["dispenser"]["puzzle_solved"] = True
+
+#========= Error Recovery =========
+def recover_from_error(e):
+    slowprint(color_text(f"\nAn unexpected error occurred: {e}", "red"), 0.02)
+    try:
+        with open("error_log.txt", "a") as f:
+            f.write(f"{time.ctime()}: {e}\n")
+    except OSError:
+        pass
+    fake_glitch_sequence()
+    choice = input("Would you like to restart the game? (yes/no): ").strip().lower()
+
+    if choice == "yes":
+        global opening_sequence_completed, scene1_completed, gameplay_started, scene2_completed, player
+        #Preserve name but reset run-time state
+        preserved_name = player.get("name")
+        player = {
+            "name": preserved_name,
+            "location": "lobby",
+            "inventory": [],
+            "bosses_defeated": 0,
+            "bosses_spared": 0,
+            "alive": True,
+            "joined_tobias": False,
+            "visited_rooms": set(),
+            "health": 50,
+            "attack": 40
+            }
+        
+        #Reset flags so game restarts cleanly
+        opening_sequence_completed = False
+        scene1_completed = False
+        gameplay_started = False
+        scene2_completed = False
+
+        #Reset bosses
+        for b in bosses:
+            #Reset alive and default healths
+            if b == "Road-Boxer":
+                bosses[b]["alive"] = True
+                bosses[b]["health"] = 300
+            elif b == "Angry-Monkey":
+                bosses[b]["alive"] = True
+                bosses[b]["health"] = 400
+            elif b == "Pack-Dude":
+                bosses[b]["alive"] = True
+                bosses[b]["health"] = 350
+            elif b == "Tobias the Wizard":
+                bosses[b]["alive"] = True
+                bosses[b]["health"] = 500
+
+        #Restart full sequence
+        opening()
+        scene1()
+        gameplay()
+        scene2()
+    else:
+        slowprint(color_text("You step away from the case... for now.", "italic"))
 
 #========= Game Dialogue Scenes ==========
 def opening():
-    global player_name
+    global player_name, opening_sequence_completed
     sep()
     slowprint("Oct. 31, 2004", 0.1)
     pause()
@@ -908,6 +1099,7 @@ def opening():
     pause()
     sep()
     player_name = input("What is your name?: ").strip()
+    player["name"] = player_name
     sep()
     pause()
     slowprint(color_text(f"{player_name}...", "magenta"), 0.04)
@@ -916,10 +1108,11 @@ def opening():
     pause()
     slowprint(color_text("10 years ago...","magenta"),0.04)
     pause(1.5)
-    #Then Game
     sep()
+    opening_sequence_completed = True
 
 def scene1():
+    global scene1_completed, player_name
     slowprint("Oct. 31, 1994", 0.1)
     slowprint("20:52:23", 0.1)
     slowprint("Big B's Arcade, Detroit, Mi", 0.1)
@@ -1001,11 +1194,81 @@ def scene1():
     slowprint(color_text("you run into an abandoned area of the arcade, not knowing where you are or came from. Your friends' screams go silent as you start to look around", "italic"), 0.04)
     slowprint(color_text("you make your way out of the storage closet you're in but realize one thing...", "italic"), 0.04)
     slowprint(color_text("you need to find a way out of here...now", "italic"), 0.04)
+    scene1_completed = True
+
+def scene2():
+    global player_name, scene2_completed, player
+
+    if player.get("joined_tobias", False) and player["alive"]:
+        sep()
+        slowprint("Oct. 31, 2004", 0.1)
+        pause()
+        slowprint("23:00:04", 0.1)
+        pause()
+        slowprint("SNIS Evidence Room", 0.1)
+        sep()
+        pause()
+        slowprint(color_text("So... that really happened?", "magenta"), 0.04)
+        slowprint(color_text("Yeah... every single last word and event in that case file is true.", "blue"), 0.04)
+        pause()
+        slowprint(color_text("But how is that even possible? An arcade game trapping people inside?", "magenta"), 0.04)
+        slowprint(color_text("Beats me Mureaux, but I've seen stranger things in my time with the SNIS.", "blue"), 0.04)
+        pause()
+        slowprint(color_text(f"Do we know what happened to {player_name}?", "magenta"), 0.04)
+        slowprint(color_text("Apparently, they were found wandering near the arcade a week later, mumbling about 'escaping the game'.", "blue"), 0.04)
+        slowprint(color_text("But they had no memory of what happened inside.", "blue"), 0.04)
+        pause()
+        slowprint(color_text("Well, at least they made it out... I guess that's something.", "magenta"), 0.04)
+        slowprint(color_text("Yeah... well the entire thing is just a rumor...", "blue"), 0.04)
+        pause()
+        slowprint(color_text("Come on, I'll treat you to coffee in the break room.", "blue"), 0.04)
+        slowprint(color_text("Really? Aren't just the kindest.", "magenta"), 0.04)
+        slowprint(color_text("Yeah...sure...whatever you say Mureaux.", "blue"), 0.04)
+        sep()
+        slowprint(color_text("you turn off the recorder, the room falling silent except for the hum of the overhead lights.", "italic"), 0.04)
+        slowprint(color_text("as you walk both  walk out, Agent Dunn leaves their I.D. tag behind...", "italic"), 0.04)
+        slowprint(color_text(f"the name on it reads, {player_name.upper()} Dunn", "bold"), 0.1)
+        slowprint(color_text("THE END", "bold"), 0.1)
+        scene2_completed = True
+
+    elif player["alive"] and player.get("joined_tobias", True):
+        sep()
+        slowprint("Oct. 31, 2004", 0.1)
+        pause()
+        slowprint("23:00:04", 0.1)
+        pause()
+        slowprint("SNIS Evidence Room", 0.1)
+        sep()
+        pause()
+        slowprint(color_text("So... that really happened?", "magenta"), 0.04)
+        slowprint(color_text("Yeah... every single last word and event in that case file is true.", "blue"), 0.04)
+        pause()
+        slowprint(color_text("But how is that even possible? An arcade game trapping people inside?", "magenta"), 0.04)
+        slowprint(color_text("Beats me Mureaux, but I've seen stranger things in my time with the SNIS.", "blue"), 0.04)
+        pause()
+        slowprint(color_text(f"Do we know what happened to {player_name}?", "magenta"), 0.04)
+        slowprint(color_text("Apparently, they were found wandering near the arcade a week later, mumbling about 'escaping the game'.", "blue"), 0.04)
+        slowprint(color_text("But they had no memory of what happened inside.", "blue"), 0.04)
+        pause()
+        slowprint(color_text("Well, at least they made it out... I guess that's something.", "magenta"), 0.04)
+        slowprint(color_text("Yeah... well the entire thing is just a rumor...", "blue"), 0.04)
+        pause()
+        slowprint(color_text("Come on, I'll treat you to coffee in the break room.", "blue"), 0.04)
+        slowprint(color_text("Really? Aren't just the kindest.", "magenta"), 0.04)
+        slowprint_glitch("That's what friends are for Mureaux!", "blue", 0.04, 0.02)
+        sep()
+        slowprint(color_text("you turn off the recorder, the room falling silent except for the hum of the overhead lights.", "italic"), 0.04)
+        slowprint(color_text("as you walk both  walk out, Agen Dunn leaves their I.D. tag behind...", "italic"), 0.04)
+        slowprint(color_text(f"the name on it reads, {player_name.upper()} Dunn", "bold"), 0.1)
+        slowprint(color_text("THE END", "bold"), 0.1)
+        scene2_completed = True
 
 #========= Main Gameplay Loop =========
 def gameplay():
+    global gameplay_started, scene2_completed, tobias_isSummoned
 
     #Initialize Game State
+    gameplay_started = True
     log_restored = False 
     command_tracker = {}
     sep()
@@ -1051,13 +1314,14 @@ def gameplay():
                     status.append("no power needed/powered")
                 slowprint(f"- {room}: {', '.join(status)}\n", 0.02)
             track_command(current_room, "map", command_tracker)
+            
         
         #Interact with POI's in the room
         elif command == "interact":
             slowprint("\nInteract with what? Specify an object to interact with.", 0.02)
             raw = input(color_text("\n> Object to interact with: ", "yellow")).strip().lower()
 
-            # create normalized variants to compare against keys in locations[...]["objects"]
+            #Create normalized variants to compare against keys in locations[...]["objects"]
             norm_us, norm_nospace, norm_space = normalize_obj_name(raw)
 
             objs = locations[current_room].get("objects", {})
@@ -1080,8 +1344,11 @@ def gameplay():
             if matched_key is None:
                 slowprint("There's nothing like that here.", 0.02)
                 continue
+                
+                
 
             obj = objs[matched_key]
+            
 
             #Object interaction logic
             if matched_key == "prize counter" and current_room == "lobby":
@@ -1109,7 +1376,7 @@ def gameplay():
 
             if matched_key == "cafeteria table" and current_room == "cafeteria":
                 if "keycard" not in player["inventory"]:
-                    slowprint(color_text("\nLooks like theres a keycard here, dont mind if I do...", "blue"), 0.02)
+                    slowprint(color_text("\nLooks like there's a keycard here, don't mind if I do...", "blue"), 0.02)
                     player["inventory"].append("keycard")
                     slowprint(color_text("\nYou obtained: keycard", "green"))
                 else:
@@ -1118,10 +1385,10 @@ def gameplay():
 
             if matched_key == "dispenser" and current_room == "cafeteria":
                 if "purified_water" in player["inventory"]:
-                    slowprint(color_text("\nI already have some water, dont think I need any more.", "blue"), 0.02)
+                    slowprint(color_text("\nI already have some water, don't think I need any more.", "blue"), 0.02)
                     continue
                 else:
-                    if locations["cafeteria"]["objects"]["dispenser"].get("puzzle solved"):
+                    if locations["cafeteria"]["objects"]["dispenser"].get("puzzle_solved"):
                         slowprint(color_text("\nThe dispenser is now functional...", "blue"), 0.02)
                         player["inventory"].append("purified_water")
                         slowprint(color_text("\nYou obtained: purified water", "green"))
@@ -1136,7 +1403,7 @@ def gameplay():
                     slowprint(color_text("\nGreat, now I won't die of dehydration...", "blue"), 0.02)
                     slowprint(color_text("\nYou obtained: purified_water", "green"))
                 elif "purified_water" in player["inventory"]:
-                    slowprint(color_text("\nI already have some water, dont think I need any more.", "blue"), 0.02)
+                    slowprint(color_text("\nI already have some water, don't think I need any more.", "blue"), 0.02)
                 else:
                     slowprint(color_text("\nThe dispenser has nothing left to give...", "blue"), 0.02)
                 continue
@@ -1155,7 +1422,7 @@ def gameplay():
 
             # If object is interactable and has an attached puzzle, run the puzzle
             if obj.get("interactable"):
-                if obj.get("puzzle") and not obj.get("puzzle solved", False):
+                if obj.get("puzzle") and not obj.get("puzzle_solved", False):
                     run_puzzle(obj["puzzle"])
                 else:
                     # Allow interactable objects without puzzles to have custom behavior
@@ -1164,7 +1431,8 @@ def gameplay():
             
             #The object exists but isn't interactable
             slowprint("You can't interact with that right now.", 0.02)
-            track_command(current_room, "interact", command_tracker)
+            track_command(current_room, "interact", command_tracker)  # FIX: don't print the tracker return value
+            
         
         #Examine POI's in the room
         elif command.startswith("examine "):
@@ -1174,26 +1442,29 @@ def gameplay():
                 if key in [norm_us, norm_nospace, norm_space]:
                     obj_name = key
                     break
-            obj_name = command.replace("examine ", "")
             examine_object(current_room, obj_name)
             track_command(current_room, "examine", command_tracker)
+            
             
         #Move to another room
         elif command.startswith("move "):
             target = command.replace("move ", "")
-            current_room = move_to_room(current_room, target, player["inventory"])
+            current_room = move_to_room(current_room, target, player["inventory"])  # FIX: move_to_room returns new room now
             check_for_boss(current_room)
             track_command(current_room, "move", command_tracker)
+            
         
         #Check Inventory
         elif command == "inventory":
             slowprint("I have...: " + ", ".join(player["inventory"]) if player["inventory"] else "\nYour inventory is empty.", 0.02)
             track_command(current_room, "inventory", command_tracker)
+            
 
         #Get a list of commands
         elif command == "help":
             slowprint("\nI can... [move] to a location, [examine] an object, look at my [inventory], and [look] around my surroundings or at my [map], or [scan] my surroundings", 0.02)
             track_command(current_room, "help", command_tracker)
+            
 
         #Give up and quit
         elif command == "quit":
@@ -1206,42 +1477,32 @@ def gameplay():
         #Unknown Command
         else:
             slowprint("\nI'm not sure thats something I can do..", 0.02)
+            
 
         #Check for Tobias Boss Fight
         if player["location"] == "throne room" and not tobias_isSummoned:
             tobias_isSummoned = True
             run_final_tobias_encounter()
+            
+        #Only run scene2 when all bosses are resolved (avoid premature epilogue)
+        if (player["alive"] or player["joined_tobias"]) and not scene2_completed and not any(bosses[b]["alive"] for b in bosses):
+            scene2()
+            gameplay_started = False
 
+        
 
-#Run Game
+#========= Run Game =========
 def main():
+    global opening_sequence_completed, scene1_completed, gameplay_started, scene2_completed
     try:
         opening()
         scene1()
         gameplay()
+        scene2()
     except(KeyboardInterrupt, EOFError) as e:
-        slowprint(color_text(f"\nAn unexpected error occurred: {e}", "red"), 0.02)
-        with open ("error_log.txt", "a") as f:
-            f.write(f"{time.ctime()}: {e}\n")
-        fake_glitch_sequence()
-        choice = input("Would you like to restart the game? (yes/no): ").strip().lower()
-        if choice == "yes":
-            main()
-        else:
-            slowprint(color_text("You step away from the machine... for now.", "italic"))
+        recover_from_error(e)
         
     except Exception as e:
-        slowprint(color_text(f"\nAn unexpected error occurred: {e}", "red"), 0.02)
-        with open ("error_log.txt", "a") as f:
-            f.write(f"{time.ctime()}: {e}\n")
-        fake_glitch_sequence()
-        choice = input("Would you like to restart the game? (yes/no): ").strip().lower()
-        if choice == "yes":
-            main()
-        else:
-            slowprint(color_text("You step away from the machine... for now.", "italic"))
-
-        
-
+        recover_from_error(e)
 if __name__ == "__main__":
     main()
