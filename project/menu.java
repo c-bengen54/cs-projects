@@ -21,45 +21,56 @@ Extra:
 /*/
 Citation
 
-- Compound Interest Formula: The formula used to calculate the future value of a deposit is 
-                             based on the standard compound interest formula:
-  A = P(1 + r/n)^(nt)
-  Where:
-  A = the future value of the investment/loan, including interest
-  P = the principal investment amount (the initial deposit)
-  r = the annual interest rate (decimal)
-  n = the number of times that interest is compounded per year
-  t = the time the money is invested for in years
+    - Compound Interest Formula: 
+        The formula used to calculate the future value of a deposit is 
+        based on the standard compound interest formula:
 
-- While Loop
-Title: Java While Loop
-Author: W3Schools
-Date: Accessed on 5/27/2026
-Code Version: Java 8
-Availability: https://www.w3schools.com/java/java_while_loop.asp
+        A = P(1 + r/n)^(nt)
+        Where:
+        A = the future value of the investment/loan, including interest
+        P = the principal investment amount (the initial deposit)
+        r = the annual interest rate (decimal)
+        n = the number of times that interest is compounded per year
+        t = the time the money is invested for in years
 
-- Switch Statement
-Title: Java Switch
-Author: W3Schools
-Date: Accessed on 5/27/2026
-Code Version: Java 8
-Availability: https://www.w3schools.com/Java/java_switch.asp
+    - While Loop
+        Title: Java While Loop
+        Author: W3Schools
+        Date: Accessed on 5/27/2026
+        Code Version: Java 8
+        Availability: https://www.w3schools.com/java/java_while_loop.asp
 
-- Printf Method
-Title: Java Output printf() Method
-Author: W3Schools
-Date: Accessed on 5/27/2026
-Code Version: Java 8
-Availability: https://www.w3schools.com/JAVA/ref_output_printf.asp
+    - Switch Statement
+        Title: Java Switch
+        Author: W3Schools
+        Date: Accessed on 5/27/2026
+        Code Version: Java 8
+        Availability: https://www.w3schools.com/Java/java_switch.asp
+
+    - Printf Method
+    Title: Java Output printf() Method
+    Author: W3Schools
+    Date: Accessed on 5/27/2026
+    Code Version: Java 8
+    Availability: https://www.w3schools.com/JAVA/ref_output_printf.asp
 */
 
 import java.util.Scanner;
+import java.util.Currency;
+import java.net.URL;
+import java.net.HttpURLConnection;
+import java.io.BufferedReader;
+import java.io.InputStreamReader;
+import com.google.gson.JsonObject;
+import com.google.gson.JsonParser;
 
 public class menu {
     static Scanner sc = new Scanner(System.in);
     static double balance = 0.0;
     static double totalBalance = 0.0;
-    
+    static Currency currency = Currency.getInstance("USD");
+    static String apiKey = System.getenv("API_KEY");
+
     public static void main(String[] args) {
         while (true) {
             System.out.println("\nWelcome to the Capitol One 360 Perfomance App");
