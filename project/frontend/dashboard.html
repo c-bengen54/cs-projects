@@ -1,0 +1,776 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Capital One 360 — Dashboard</title>
+    <link rel="stylesheet" href="styles.css">
+    <style>
+        /* ── Dashboard Layout ── */
+        .dashboard {
+            min-height: 100vh;
+            display: grid;
+            grid-template-rows: auto 1fr;
+            position: relative;
+            z-index: 1;
+        }
+
+        /* ── Navbar ── */
+        .navbar {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 1.2rem 2.5rem;
+            background: rgba(10,22,40,0.8);
+            backdrop-filter: blur(20px);
+            border-bottom: 1px solid rgba(201,168,76,0.12);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .nav-brand {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+
+        .logo-mark {
+            width: 36px;
+            height: 36px;
+            background: linear-gradient(135deg, var(--gold), var(--gold-light));
+            border-radius: 9px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-family: 'Playfair Display', serif;
+            font-weight: 700;
+            color: var(--navy);
+            font-size: 1.1rem;
+        }
+
+        .nav-title {
+            font-family: 'Playfair Display', serif;
+            font-size: 1rem;
+            font-weight: 600;
+        }
+
+        .nav-title span {
+            display: block;
+            font-family: 'DM Sans', sans-serif;
+            font-size: 0.65rem;
+            letter-spacing: 0.1em;
+            text-transform: uppercase;
+            color: var(--gold);
+        }
+
+        .nav-right {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .nav-user {
+            display: flex;
+            align-items: center;
+            gap: 0.6rem;
+            font-size: 0.88rem;
+            color: var(--gray-300);
+        }
+
+        .user-avatar {
+            width: 32px;
+            height: 32px;
+            background: linear-gradient(135deg, var(--navy-light), var(--gold));
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            font-size: 0.8rem;
+            color: var(--white);
+            text-transform: uppercase;
+        }
+
+        /* ── Main Content ── */
+        .main {
+            padding: 2.5rem;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            grid-template-rows: auto auto 1fr;
+            gap: 1.5rem;
+            max-width: 1400px;
+            margin: 0 auto;
+            width: 100%;
+        }
+
+        /* ── Balance Hero ── */
+        .balance-hero {
+            grid-column: 1 / -1;
+            background: linear-gradient(135deg,
+                rgba(17,34,64,0.95) 0%,
+                rgba(26,58,107,0.8) 100%);
+            border: 1px solid rgba(201,168,76,0.2);
+            border-radius: var(--radius-lg);
+            padding: 2.5rem;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .balance-hero::before {
+            content: '';
+            position: absolute;
+            right: -80px;
+            top: -80px;
+            width: 300px;
+            height: 300px;
+            border-radius: 50%;
+            background: radial-gradient(circle, rgba(201,168,76,0.08), transparent 70%);
+            pointer-events: none;
+        }
+
+        .balance-left {}
+
+        .balance-label {
+            font-size: 0.75rem;
+            font-weight: 600;
+            letter-spacing: 0.1em;
+            text-transform: uppercase;
+            color: var(--gold);
+            margin-bottom: 0.5rem;
+        }
+
+        .balance-amount {
+            font-family: 'Playfair Display', serif;
+            font-size: clamp(2.5rem, 5vw, 4rem);
+            font-weight: 700;
+            line-height: 1;
+            color: var(--white);
+        }
+
+        .balance-amount .currency-symbol {
+            font-size: 0.5em;
+            vertical-align: super;
+            color: var(--gold);
+        }
+
+        .balance-subtitle {
+            margin-top: 0.5rem;
+            font-size: 0.85rem;
+            color: var(--gray-500);
+        }
+
+        .balance-right {
+            display: flex;
+            flex-direction: column;
+            gap: 0.75rem;
+            text-align: right;
+        }
+
+        .balance-stat {
+            font-size: 0.82rem;
+            color: var(--gray-500);
+        }
+
+        .balance-stat strong {
+            display: block;
+            font-size: 1rem;
+            color: var(--white);
+            font-weight: 500;
+        }
+
+        /* ── Foreign Balances ── */
+        .foreign-card {
+            grid-column: 1 / -1;
+        }
+
+        .section-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 1.25rem;
+        }
+
+        .section-title {
+            font-size: 0.75rem;
+            font-weight: 600;
+            letter-spacing: 0.1em;
+            text-transform: uppercase;
+            color: var(--gold);
+        }
+
+        .foreign-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+            gap: 1rem;
+        }
+
+        .currency-item {
+            background: rgba(255,255,255,0.03);
+            border: 1px solid rgba(255,255,255,0.07);
+            border-radius: var(--radius);
+            padding: 1.1rem;
+            transition: var(--transition);
+        }
+
+        .currency-item:hover {
+            border-color: rgba(201,168,76,0.25);
+            background: rgba(201,168,76,0.04);
+        }
+
+        .currency-code {
+            font-size: 0.72rem;
+            font-weight: 700;
+            letter-spacing: 0.1em;
+            color: var(--gold);
+            text-transform: uppercase;
+        }
+
+        .currency-amount {
+            font-family: 'Playfair Display', serif;
+            font-size: 1.4rem;
+            font-weight: 600;
+            margin-top: 0.25rem;
+        }
+
+        .currency-name {
+            font-size: 0.75rem;
+            color: var(--gray-500);
+            margin-top: 0.1rem;
+        }
+
+        .no-foreign {
+            color: var(--gray-500);
+            font-size: 0.88rem;
+            font-style: italic;
+        }
+
+        /* ── Action Panel ── */
+        .action-panel {}
+
+        .action-tabs {
+            display: flex;
+            gap: 0.5rem;
+            margin-bottom: 1.5rem;
+            flex-wrap: wrap;
+        }
+
+        .action-tab {
+            padding: 0.5rem 1rem;
+            border-radius: 999px;
+            border: 1px solid rgba(255,255,255,0.1);
+            background: transparent;
+            color: var(--gray-500);
+            font-family: 'DM Sans', sans-serif;
+            font-size: 0.82rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: var(--transition);
+        }
+
+        .action-tab.active {
+            background: rgba(201,168,76,0.15);
+            color: var(--gold);
+            border-color: rgba(201,168,76,0.3);
+        }
+
+        .action-form { display: none; flex-direction: column; gap: 1rem; }
+        .action-form.active { display: flex; }
+
+        .action-result {
+            margin-top: 1rem;
+            padding: 1rem;
+            background: rgba(46,204,143,0.08);
+            border: 1px solid rgba(46,204,143,0.2);
+            border-radius: var(--radius);
+            font-size: 0.88rem;
+            color: #7eedc4;
+            display: none;
+        }
+
+        .action-result.show { display: block; }
+
+        /* ── Transaction History ── */
+        .history-panel {
+            grid-column: 1 / -1;
+        }
+
+        .tx-list {
+            display: flex;
+            flex-direction: column;
+            gap: 0.6rem;
+            max-height: 420px;
+            overflow-y: auto;
+            padding-right: 0.25rem;
+        }
+
+        .tx-item {
+            display: grid;
+            grid-template-columns: auto 1fr auto auto;
+            align-items: center;
+            gap: 1rem;
+            padding: 1rem 1.25rem;
+            background: rgba(255,255,255,0.02);
+            border: 1px solid rgba(255,255,255,0.05);
+            border-radius: var(--radius);
+            transition: var(--transition);
+            animation: fadeUp 0.3s ease forwards;
+        }
+
+        .tx-item:hover {
+            background: rgba(255,255,255,0.04);
+            border-color: rgba(255,255,255,0.1);
+        }
+
+        .tx-icon {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1rem;
+            flex-shrink: 0;
+        }
+
+        .tx-icon.deposit  { background: rgba(46,204,143,0.12); }
+        .tx-icon.withdraw { background: rgba(224,92,92,0.12); }
+        .tx-icon.convert  { background: rgba(201,168,76,0.12); }
+
+        .tx-info {}
+
+        .tx-type {
+            font-size: 0.88rem;
+            font-weight: 600;
+            color: var(--white);
+        }
+
+        .tx-note {
+            font-size: 0.75rem;
+            color: var(--gray-500);
+            margin-top: 0.1rem;
+        }
+
+        .tx-time {
+            font-size: 0.75rem;
+            color: var(--gray-500);
+            text-align: right;
+            white-space: nowrap;
+        }
+
+        .tx-amount {
+            text-align: right;
+        }
+
+        .tx-amount .amount {
+            font-family: 'Playfair Display', serif;
+            font-size: 1rem;
+            font-weight: 600;
+        }
+
+        .tx-amount .running {
+            font-size: 0.72rem;
+            color: var(--gray-500);
+        }
+
+        .amount.positive { color: var(--green); }
+        .amount.negative { color: var(--red); }
+        .amount.neutral  { color: var(--gold); }
+
+        .no-transactions {
+            text-align: center;
+            padding: 3rem;
+            color: var(--gray-500);
+            font-size: 0.9rem;
+        }
+
+        /* ── Responsive ── */
+        @media (max-width: 900px) {
+            .main {
+                grid-template-columns: 1fr;
+                padding: 1.5rem;
+            }
+            .balance-hero { flex-direction: column; gap: 1.5rem; text-align: center; }
+            .balance-right { text-align: center; flex-direction: row; justify-content: center; gap: 2rem; }
+            .foreign-card { grid-column: 1; }
+            .history-panel { grid-column: 1; }
+        }
+    </style>
+</head>
+<body>
+    <div class="dashboard">
+
+        <!-- Navbar -->
+        <nav class="navbar">
+            <div class="nav-brand">
+                <div class="logo-mark">C</div>
+                <div class="nav-title">
+                    Capital One
+                    <span>360 Performance</span>
+                </div>
+            </div>
+            <div class="nav-right">
+                <div class="nav-user">
+                    <div class="user-avatar" id="userAvatar">?</div>
+                    <span id="usernameDisplay">Loading...</span>
+                </div>
+                <button class="btn btn-ghost btn-sm" onclick="logout()">Sign Out</button>
+            </div>
+        </nav>
+
+        <!-- Main Content -->
+        <main class="main">
+
+            <!-- Balance Hero -->
+            <div class="balance-hero card fade-up" style="border: 1px solid rgba(201,168,76,0.2);">
+                <div class="balance-left">
+                    <div class="balance-label">Total USD Balance</div>
+                    <div class="balance-amount">
+                        <span class="currency-symbol">$</span><span id="usdBalance">0.00</span>
+                    </div>
+                    <div class="balance-subtitle">Capital One 360 Performance Savings</div>
+                </div>
+                <div class="balance-right">
+                    <div class="balance-stat">
+                        Interest Rate
+                        <strong>4.00% APY</strong>
+                    </div>
+                    <div class="balance-stat">
+                        Account Status
+                        <strong style="color: var(--green);">● Active</strong>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Foreign Currency Balances -->
+            <div class="card foreign-card fade-up-delay-1">
+                <div class="section-header">
+                    <div class="section-title">Foreign Currency Balances</div>
+                    <button class="btn btn-ghost btn-sm" onclick="refreshBalances()">↻ Refresh</button>
+                </div>
+                <div class="foreign-grid" id="foreignGrid">
+                    <p class="no-foreign">No foreign currency balances yet.</p>
+                </div>
+            </div>
+
+            <!-- Actions -->
+            <div class="card action-panel fade-up-delay-2">
+                <div class="section-header">
+                    <div class="section-title">Quick Actions</div>
+                </div>
+
+                <div class="action-tabs">
+                    <button class="action-tab active" onclick="switchAction('deposit')">Deposit</button>
+                    <button class="action-tab" onclick="switchAction('withdraw')">Withdraw</button>
+                    <button class="action-tab" onclick="switchAction('convert')">Convert</button>
+                </div>
+
+                <!-- Deposit Form -->
+                <div class="action-form active" id="form-deposit">
+                    <div class="form-group">
+                        <label>Amount (USD)</label>
+                        <input type="number" id="depAmount" placeholder="0.00" min="0.01" step="0.01">
+                    </div>
+                    <div class="form-group">
+                        <label>Years</label>
+                        <input type="number" id="depYears" placeholder="1" min="1" max="50">
+                    </div>
+                    <div class="form-group">
+                        <label>Compounds Per Year</label>
+                        <select id="depCompounds">
+                            <option value="1">Annually (1x)</option>
+                            <option value="4">Quarterly (4x)</option>
+                            <option value="12" selected>Monthly (12x)</option>
+                            <option value="365">Daily (365x)</option>
+                        </select>
+                    </div>
+                    <button class="btn btn-primary" onclick="doDeposit()">Deposit & Earn Interest</button>
+                    <div class="action-result" id="depResult"></div>
+                </div>
+
+                <!-- Withdraw Form -->
+                <div class="action-form" id="form-withdraw">
+                    <div class="form-group">
+                        <label>Amount (USD)</label>
+                        <input type="number" id="wdAmount" placeholder="0.00" min="0.01" step="0.01">
+                    </div>
+                    <button class="btn btn-danger" onclick="doWithdraw()">Withdraw</button>
+                    <div class="action-result" id="wdResult"></div>
+                </div>
+
+                <!-- Convert Form -->
+                <div class="action-form" id="form-convert">
+                    <div class="form-group">
+                        <label>Amount (USD)</label>
+                        <input type="number" id="convAmount" placeholder="0.00" min="0.01" step="0.01">
+                    </div>
+                    <div class="form-group">
+                        <label>Target Currency</label>
+                        <select id="convCurrency">
+                            <option value="EUR">Euro (EUR)</option>
+                            <option value="GBP">British Pound (GBP)</option>
+                            <option value="JPY">Japanese Yen (JPY)</option>
+                            <option value="CAD">Canadian Dollar (CAD)</option>
+                            <option value="MXN">Mexican Peso (MXN)</option>
+                        </select>
+                    </div>
+                    <div id="liveRateDisplay" style="font-size:0.8rem; color: var(--gray-500); margin-top: -0.5rem;"></div>
+                    <button class="btn btn-primary" onclick="doConvert()">Convert at Live Rate</button>
+                    <div class="action-result" id="convResult"></div>
+                </div>
+            </div>
+
+            <!-- Transaction History -->
+            <div class="card history-panel fade-up-delay-3">
+                <div class="section-header">
+                    <div class="section-title">Transaction History</div>
+                    <span id="txCount" style="font-size:0.8rem; color: var(--gray-500);"></span>
+                </div>
+                <div class="tx-list" id="txList">
+                    <div class="no-transactions">No transactions yet. Make your first deposit!</div>
+                </div>
+            </div>
+
+        </main>
+    </div>
+
+    <script>
+        const API = window.location.origin;
+        const username = sessionStorage.getItem('username');
+        let liveRates  = {};
+
+        // ── Auth Guard ──
+        if (!username) window.location.href = 'login.html';
+
+        // ── Init ──
+        document.getElementById('usernameDisplay').textContent = username;
+        document.getElementById('userAvatar').textContent = username.charAt(0);
+
+        // load data on page open
+        refreshBalances();
+        loadHistory();
+        fetchLiveRates();
+
+        // ── Logout ──
+        function logout() {
+            sessionStorage.removeItem('username');
+            window.location.href = 'login.html';
+        }
+
+        // ── Tab Switching ──
+        function switchAction(tab) {
+            document.querySelectorAll('.action-tab').forEach((btn, i) => {
+                const tabs = ['deposit', 'withdraw', 'convert'];
+                btn.classList.toggle('active', tabs[i] === tab);
+            });
+            document.querySelectorAll('.action-form').forEach(f => f.classList.remove('active'));
+            document.getElementById(`form-${tab}`).classList.add('active');
+        }
+
+        // ── Fetch Live Rates ──
+        async function fetchLiveRates() {
+            try {
+                const res  = await fetch(`${API}/rates`);
+                if (!res.ok) return;
+                const data = await res.json();
+                liveRates  = data;
+                updateRateDisplay();
+            } catch (e) {
+                console.log('Could not fetch live rates');
+            }
+        }
+
+        function updateRateDisplay() {
+            const code    = document.getElementById('convCurrency').value;
+            const rate    = liveRates[code];
+            const display = document.getElementById('liveRateDisplay');
+            if (rate) display.textContent = `Live Rate: 1 USD = ${rate.toFixed(4)} ${code}`;
+            else display.textContent = '';
+        }
+
+        document.getElementById('convCurrency')?.addEventListener('change', updateRateDisplay);
+
+        // ── Refresh Balances ──
+        async function refreshBalances() {
+            try {
+                const res     = await fetch(`${API}/balance?username=${username}`);
+                const account = await res.json();
+
+                // USD
+                document.getElementById('usdBalance').textContent =
+                    parseFloat(account.balance).toFixed(2);
+
+                // Foreign
+                const grid    = document.getElementById('foreignGrid');
+                const foreign = account.foreignBalances;
+                const codes   = Object.keys(foreign);
+
+                const names = {
+                    EUR: 'Euro', GBP: 'British Pound', JPY: 'Japanese Yen',
+                    CAD: 'Canadian Dollar', MXN: 'Mexican Peso'
+                };
+
+                if (codes.length === 0) {
+                    grid.innerHTML = '<p class="no-foreign">No foreign currency balances yet.</p>';
+                } else {
+                    grid.innerHTML = codes.map(code => `
+                        <div class="currency-item">
+                            <div class="currency-code">${code}</div>
+                            <div class="currency-amount">${parseFloat(foreign[code]).toFixed(2)}</div>
+                            <div class="currency-name">${names[code] || code}</div>
+                        </div>
+                    `).join('');
+                }
+
+            } catch (e) {
+                console.error('Could not load balances:', e);
+            }
+        }
+
+        // ── Load History ──
+        async function loadHistory() {
+            try {
+                const res  = await fetch(`${API}/history?username=${username}`);
+                const txs  = await res.json();
+                const list = document.getElementById('txList');
+
+                document.getElementById('txCount').textContent =
+                    `${txs.length} transaction${txs.length !== 1 ? 's' : ''}`;
+
+                if (txs.length === 0) {
+                    list.innerHTML = '<div class="no-transactions">No transactions yet. Make your first deposit!</div>';
+                    return;
+                }
+
+                const icons = { Deposit: '↑', Withdrawal: '↓', Conversion: '⇄' };
+                const types = { Deposit: 'deposit', Withdrawal: 'withdraw', Conversion: 'convert' };
+                const amtClass = { Deposit: 'positive', Withdrawal: 'negative', Conversion: 'neutral' };
+                const amtPrefix = { Deposit: '+', Withdrawal: '-', Conversion: '⇄' };
+
+                // show newest first
+                list.innerHTML = [...txs].reverse().map(tx => `
+                    <div class="tx-item">
+                        <div class="tx-icon ${types[tx.type]}">${icons[tx.type] || '•'}</div>
+                        <div class="tx-info">
+                            <div class="tx-type">${tx.type}</div>
+                            <div class="tx-note">${tx.note}</div>
+                        </div>
+                        <div class="tx-time">${formatTime(tx.timestamp)}</div>
+                        <div class="tx-amount">
+                            <div class="amount ${amtClass[tx.type]}">
+                                ${amtPrefix[tx.type]}$${parseFloat(tx.inputAmount).toFixed(2)}
+                            </div>
+                            <div class="running">Balance: $${parseFloat(tx.runningBalance).toFixed(2)}</div>
+                        </div>
+                    </div>
+                `).join('');
+
+            } catch (e) {
+                console.error('Could not load history:', e);
+            }
+        }
+
+        // ── Format Timestamp ──
+        function formatTime(ts) {
+            if (!ts) return '';
+            const d = new Date(ts.replace(' ', 'T'));
+            return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
+                + ' ' + d.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
+        }
+
+        // ── Deposit ──
+        async function doDeposit() {
+            const amount    = parseFloat(document.getElementById('depAmount').value);
+            const years     = parseInt(document.getElementById('depYears').value);
+            const compounds = parseInt(document.getElementById('depCompounds').value);
+
+            if (!amount || !years) { alert('Please fill in all fields.'); return; }
+
+            try {
+                const res  = await fetch(`${API}/deposit`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ username, amount, years, compounds })
+                });
+                const data = await res.json();
+                if (res.ok) {
+                    const result = document.getElementById('depResult');
+                    result.innerHTML = `
+                        After ${years} year${years>1?'s':''}: <strong>$${data.finalValue}</strong><br>
+                        New USD Balance: <strong>$${data.balance}</strong>
+                    `;
+                    result.classList.add('show');
+                    refreshBalances();
+                    loadHistory();
+                } else {
+                    alert(data.error);
+                }
+            } catch (e) {
+                alert('Could not connect to server.');
+            }
+        }
+
+        // ── Withdraw ──
+        async function doWithdraw() {
+            const amount = parseFloat(document.getElementById('wdAmount').value);
+            if (!amount) { alert('Please enter an amount.'); return; }
+
+            try {
+                const res  = await fetch(`${API}/withdraw`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ username, amount })
+                });
+                const data = await res.json();
+                if (res.ok) {
+                    const result = document.getElementById('wdResult');
+                    result.innerHTML = `Withdrawal successful.<br>New Balance: <strong>$${data.balance}</strong>`;
+                    result.classList.add('show');
+                    refreshBalances();
+                    loadHistory();
+                } else {
+                    alert(data.error);
+                }
+            } catch (e) {
+                alert('Could not connect to server.');
+            }
+        }
+
+        // ── Convert ──
+        async function doConvert() {
+            const amount       = parseFloat(document.getElementById('convAmount').value);
+            const currencyCode = document.getElementById('convCurrency').value;
+            const rate         = liveRates[currencyCode];
+
+            if (!amount) { alert('Please enter an amount.'); return; }
+            if (!rate)   { alert('Live rates not loaded yet. Please wait.'); return; }
+
+            try {
+                const res  = await fetch(`${API}/convert`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ username, amount, currencyCode, rate })
+                });
+                const data = await res.json();
+                if (res.ok) {
+                    const result = document.getElementById('convResult');
+                    result.innerHTML = `
+                        Converted: <strong>${data.converted} ${currencyCode}</strong><br>
+                        Remaining USD: <strong>$${data.balance}</strong>
+                    `;
+                    result.classList.add('show');
+                    refreshBalances();
+                    loadHistory();
+                } else {
+                    alert(data.error);
+                }
+            } catch (e) {
+                alert('Could not connect to server.');
+            }
+        }
+    </script>
+</body>
+</html>
