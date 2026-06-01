@@ -5,7 +5,8 @@
 # Java Independent Lab - project folder
 # - Exercise: Million Dollar Programmer! - Capital One Banking App
 
-Independent lab program that will allow users to simulate using a banking and savings account with compound interest, live rate currency conversion, and an HTML + CSS frontend and Java server backend
+An independent lab program that will allow users to simulate using a banking and savings account with compound interest, 
+live rate currency conversion, and an HTML + CSS frontend and Java server backend
 
 ---
 ### Programmer: 
