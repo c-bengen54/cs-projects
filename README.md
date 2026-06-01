@@ -135,6 +135,8 @@ All puzzles are accessed by using `interact` on specific objects in the world.
 
 Developed as a course project. Citations for specific Python standard library features used in the implementation are included in the source file header.
 
+---
+
 # Java Independent Lab - project folder
 # - Exercise: Million Dollar Programmer! - Capital One Banking App
 
