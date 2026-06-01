@@ -1,6 +1,139 @@
 # CS Projects
 
 # Would You Like to Play A Game? - WYLTPAG folder
+# - Big B's Arcade
+
+**Authors:** Christopher Bengen, Logan Down, Aaron Pichardo  
+**Date:** November 5, 2025
+
+---
+
+## Overview
+
+*Big B's Arcade Mystery* is a text-based adventure game set inside a haunted 1990s arcade. You play as one of a group of friends who stumble upon a mysterious arcade cabinet — and quickly find themselves trapped by the evil, soul-stealing wizard **Tobias**. To escape, you must navigate the dark and broken halls of Big B's Arcade, solve puzzles to restore power and unlock new areas, and confront the twisted versions of your friends that Tobias has corrupted.
+
+Your choices throughout the game determine which of five possible endings you reach.
+
+---
+
+## Features
+
+- **Branching story** with five distinct endings (True, Good, Bad, Secret, and Lame)
+- **Boss battle system** with a purification mechanic that lets you spare corrupted friends instead of defeating them — and affects the ending you receive
+- **Six puzzles** spanning voltage calibration, Python syntax repair, bootloader stabilization, file restoration, signal interruption, and EOF input
+- **Dynamic atmosphere** via ANSI color, typewriter-style printing, glitch effects, and flickering text
+- **Command tracker** that reacts when you repeat the same action too many times, with increasingly exasperated in-character responses
+- **Error recovery** system that logs crashes and offers a clean restart without losing your character's name
+
+---
+
+## Requirements
+
+- Python 3.x
+- A terminal that supports ANSI escape codes (standard on macOS, Linux, and Windows Terminal)
+
+No third-party libraries are needed — only Python's standard library (`random`, `time`, `sys`, `os`).
+
+---
+
+## How to Run
+
+```bash
+python would_you_like_to_play_a_game
+```
+
+You will be prompted to enter your character's name before the story begins.
+
+---
+
+## Commands
+
+| Command | Description |
+|---|---|
+| `look` / `scan` | Describe your current room and list objects of interest |
+| `examine <object>` | Read the description of a specific object |
+| `interact` | Interact with an object (may trigger a puzzle) |
+| `move <room>` | Travel to a connected room |
+| `inventory` | List the items you are currently carrying |
+| `map` | Display all rooms with their lock and power status |
+| `help` | Show available commands |
+| `quit` | Give up (leads to a bad ending) |
+
+---
+
+## Locations
+
+The arcade comprises eight interconnected areas. Some require a key item to enter; others require the power to be restored first.
+
+```
+Lobby
+├── Backroom (requires: key)
+│   └── Control Room (requires: keycard + power)
+├── Arcade Room Floor (requires: power)
+│   ├── Big B Arena (requires: arcade token)
+│   │   └── Maze (requires: maze_key)
+│   │       └── Throne Room (requires: throne_key)
+└── Cafeteria
+```
+
+---
+
+## Bosses
+
+Three of your corrupted friends guard key areas of the arcade. A fourth and final encounter waits in the Throne Room.
+
+| Boss | Location | Health | Notes |
+|---|---|---|---|
+| Road-Boxer | Arcade Room Floor | 300 | First encounter; Chad transformed |
+| Angry-Monkey | Big B Arena | 400 | Brad, who embraced the change |
+| Pack-Dude | Maze | 350 | Arthur, who regrets his deal with Tobias |
+| Tobias the Wizard | Throne Room | 500 | Final boss; form varies by ending |
+
+In combat you may **attack**, **dodge** (dice roll required), **run** (forfeit the fight), or **use item**. If a boss's health drops to 20 or below and you are carrying **purified water**, you can attempt a purification ritual to spare them — though it requires a successful dice roll.
+
+---
+
+## Endings
+
+The ending you receive depends on how many bosses you purified vs. defeated, and what items you are carrying when you reach the Throne Room.
+
+| Ending | Condition |
+|---|---|
+| **True Ending** | All three friends purified (spared = 3) |
+| **Good Ending** | At least one friend purified, rest defeated (spared > 0, total = 3) |
+| **Secret Ending** | No purifications, carrying the arcade token but no purified water — then choose to join Tobias |
+| **Bad Ending** | Defeated by Tobias, or choose "no" after the secret ending offer |
+| **Lame Ending** | Reach the Throne Room without resolving any boss fights |
+
+---
+
+## Puzzles
+
+All puzzles are accessed by using `interact` on specific objects in the world.
+
+| Puzzle | Object | Location | Goal |
+|---|---|---|---|
+| **Generator** | Generator | Backroom | Set three voltage dials to sum to 100 — restores power to the arcade |
+| **Syntax** | Monitor | Control Room | Fix a broken Python `for` loop to unlock Big B Arena |
+| **File Restore** | Terminal | Control Room | Type the correct restored log line to receive the arcade token |
+| **EOF Input** | Dispenser terminal | Arcade Room Floor | Terminate a connection by sending `EOF` or typing `eof` |
+| **Signal Interrupt** | Maze Entrance | Arcade Room Floor | Interrupt an infinite loop to unlock the Maze |
+| **Bootloader** | Dispenser | Cafeteria | Type `REPAIR` five times in sequence before sectors destabilize |
+
+---
+
+## Tips
+
+- Read sticky notes carefully — they contain direct hints for the Generator and File Restore puzzles.
+- Purified water can be found in multiple locations. You need it to attempt boss purifications.
+- Solving all six puzzles is not required to finish the game, but some are necessary to progress to later areas.
+- If you die in a boss fight, you are offered a retry — taking it resets both your HP and the boss's HP.
+
+---
+
+## Credits
+
+Developed as a course project. Citations for specific Python standard library features used in the implementation are included in the source file header.
 
 # Java Independent Lab - project folder
 # - Exercise: Million Dollar Programmer! - Capital One Banking App
