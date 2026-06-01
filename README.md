@@ -15,7 +15,10 @@ live rate currency conversion, and an HTML + CSS frontend and Java server backen
 ## 5/29/2026
 ### Description:
 ```
-This program simulates a simple banking application that allows users to check their balance, make deposits, and withdraw funds. The deposit function calculates the future value of the deposit using a fixed interest rate and a compounding frequency. The program continues to run until the user chooses to exit.
+This program simulates a simple banking application that allows users to check their balance,
+make deposits, and withdraw funds. The deposit function calculates the deposit's
+future value using a fixed interest rate and a compounding frequency.
+The program continues to run until the user chooses to exit.
 ```
 
 ### Extras
