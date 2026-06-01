@@ -1,6 +1,6 @@
 # CS Projects
 
-## Would You Like to Play A Game? - WYLTPAG folder
+# Would You Like to Play A Game? - WYLTPAG folder
 
 # Java Independent Lab - project folder
 # - Exercise: Million Dollar Programmer! - Capital One Banking App
