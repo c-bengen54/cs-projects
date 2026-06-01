@@ -57,11 +57,11 @@
         Availability: https://www.w3schools.com/Java/java_switch.asp
 
     - Printf Method
-    Title: Java Output printf() Method
-    Author: W3Schools
-    Date: Accessed on 5/27/2026
-    Code Version: Java 8
-    Availability: https://www.w3schools.com/JAVA/ref_output_printf.asp
+        Title: Java Output printf() Method
+        Author: W3Schools
+        Date: Accessed on 5/27/2026
+        Code Version: Java 8
+        Availability: https://www.w3schools.com/JAVA/ref_output_printf.asp
 
 
     - HashMap Usage:
