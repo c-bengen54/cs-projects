@@ -1,12 +1,3 @@
-/*
- * Title: Capital One 360 Banking App - Web Server
- * Programmer: Christopher Bengen
- * Date: 5/28/2026
- * Description: This file creates a web server using Spark Java
- *              that serves the frontend and handles all banking
- *              operations via HTTP endpoints.
- */
-
 import static spark.Spark.*;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonArray;
