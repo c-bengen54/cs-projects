@@ -2,9 +2,9 @@
 
 ## Java Independent Lab - project folder
 ## Would You Like to Play A Game? - WYLTPAG folder
-# Exercise : Million Dollar Programmer! - Capital One Banking App
+# Exercise: Million Dollar Programmer! - Capital One Banking App
 
-Independent lab program which will allow users to simulate using a banking and savings account with compound interest, live rate currency conversion, and a HTML + CSS frontend and Java server backend
+Independent lab program that will allow users to simulate using a banking and savings account with compound interest, live rate currency conversion, and an HTML + CSS frontend and Java server backend
 
 ---
 ### Programmer: 
@@ -13,7 +13,7 @@ Independent lab program which will allow users to simulate using a banking and s
 ## 5/29/2026
 ### Description:
 ```
-This program simulates a simple banking application where users can check their balance, make deposits, and withdraw funds.The deposit function calculates the future value of the deposit based on a fixed interest rate and compounding frequency. The program continues to run until the user chooses to exit.
+This program simulates a simple banking application that allows users to check their balance, make deposits, and withdraw funds. The deposit function calculates the future value of the deposit using a fixed interest rate and a compounding frequency. The program continues to run until the user chooses to exit.
 ```
 
 ### Extras
@@ -21,7 +21,7 @@ This program simulates a simple banking application where users can check their 
       
 - **Switch Statements and If Statements**: A switch statement is used to handle the user's menu selection and execute the corresponding actions for checking balance, making deposits, withdrawing funds, or exiting the program. Various other if statements are used to differentiate between certain logic operations.
       
-- **Compound Interest Calculation**: The program calculates the future value of a deposit using the compound interest formula,which takes into account the principal amount, interest rate, compounding frequency, and time period.
+- **Compound Interest Calculation**: The program calculates the future value of a deposit using the compound interest formula, which takes into account the principal amount, interest rate, compounding frequency, and time period.
     
 - **Input Validation**: The program includes basic input validation to ensure that the user selects valid menu options and does not attempt to withdraw more funds than available in the balance.
 
@@ -29,9 +29,9 @@ This program simulates a simple banking application where users can check their 
     
 - **Transaction History**: The program also keeps track of the total balance across all transactions, allowing users to see their overall financial status.
 
-- **Password Hashing and Login System**: The program allows for users to login using differentiated accounts with hashed passwords which uses SHA-256.
+- **Password Hashing and Login System**: The program allows users to log in using differentiated accounts with hashed passwords that use SHA-256.
 
-- **Java backend and HTML frontend**: The program uses an HTML frontend to display to users the programs functionality, while the Java backend handles frontend -> server interaction.
+- **Java backend and HTML frontend**: The program uses an HTML frontend to display to users the program's functionality, while the Java backend handles frontend -> server interaction.
 
 ---
 
@@ -68,7 +68,7 @@ cs-projects/
 └── WYLTPAG/                  #Would You Like To Play A Game? Game Jam Submission
 ```
 
-## To run the java project use this compiler bash command
+## To run the Java project, use this compiler bash command
 
 ```
 cd /workspaces/cs-projects/project
